@@ -1,41 +1,120 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <link rel="stylesheet" href="style.css">
     <meta charset="UTF-8">
-    <title>AI 간호사 체험 웹</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏥 AI 간호사 체험 웹</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script type="module" src="firebase.js"></script>
+    <script type="module" src="ai.js"></script>
+    <script src="script.js" defer></script>
 </head>
-<script src="script.js"></script>
+
 <body>
+
+<div class="container">
 
 <h1>🏥 AI 간호사 체험 웹</h1>
 
+<div class="loginBox">
+
+<h2>회원</h2>
+
+<input type="email"
+id="email"
+placeholder="이메일">
+
+<input type="password"
+id="password"
+placeholder="비밀번호">
+
+<div>
+
+<button id="signupBtn">
+회원가입
+</button>
+
+<button id="loginBtn">
+로그인
+</button>
+
+<button id="logoutBtn">
+로그아웃
+</button>
+
+</div>
+
+<p id="loginStatus">
+로그인 안됨
+</p>
+
+</div>
+
 <hr>
 
-<button>로그인</button>
-<button>회원가입</button>
+<div class="apiBox">
+
+<h2>OpenAI API Key</h2>
+
+<input
+type="password"
+id="apiKey"
+placeholder="sk-...">
+
+</div>
+
+<hr>
+
+<div class="chatBox">
 
 <h2>AI 환자 상담</h2>
 
-<textarea rows="5" cols="50" placeholder="증상을 입력하세요"></textarea>
-
-<br><br>
-
-<button onclick="startConsultation()">
-    상담하기
-</button>
-
-<h3>AI 답변</h3>
-
-<div>
-    AI의 답변이 여기에 표시됩니다.
-</div>
+<textarea
+id="userInput"
+placeholder="증상을 입력하세요"></textarea>
 
 <br>
 
-<button>🔊 음성 듣기</button>
-    
+<button id="sendBtn">
+상담하기
+</button>
+
+<button id="voiceBtn">
+🔊 음성 듣기
+</button>
+
+</div>
+
+<hr>
+
+<div>
+
+<h2>AI 답변</h2>
+
+<div id="answer">
+
+안녕하세요.
+어디가 불편하신가요?
+
+</div>
+
+</div>
+
+<hr>
+
+<div>
+
+<h2>상담 기록</h2>
+
+<div id="history">
+
+</div>
+
+</div>
+
+</div>
 
 </body>
 </html>
-<script src="script.js"></script>
