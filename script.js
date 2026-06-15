@@ -7,12 +7,10 @@ import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot } f
 const firebaseConfig = {
   apiKey: "AIzaSyBwMSX60e_IY3O9wIJf8GWlZnfE6bABldQ",
   authDomain: "jjonijjoni-4fc75.firebaseapp.com",
-  databaseURL: "https://jjonijjoni-4fc75-default-rtdb.firebaseio.com",
   projectId: "jjonijjoni-4fc75",
   storageBucket: "jjonijjoni-4fc75.firebasestorage.app",
   messagingSenderId: "66509055047",
   appId: "1:66509055047:web:9b734e794e4556ca07fd62",
-  measurementId: "G-DC3P80HT9H"
 };
 
 // Firebase 초기화
