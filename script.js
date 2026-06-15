@@ -100,21 +100,38 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-// [5] 상담 내용 저장 기능 (Firestore)
+// [5] 간호사 상담 및 내용 저장 기능 (수정 버전)
 btnSaveConsult.addEventListener('click', async () => {
-    const content = consultInput.value.trim();
-    if(!content) return alert('내용을 입력해주세요.');
+    const userContent = consultInput.value.trim();
+    if(!userContent) return alert('증상을 입력해주세요.');
     if(!currentUser) return alert('로그인이 필요합니다.');
 
+    // 1. 간호사의 가상 답변 생성 로직 (예시 키워드 판단)
+    let nurseAnswer = "증상을 확인했습니다. 휴식을 취하시고 증상이 지속되면 병원을 방문하세요."; // 기본 답변
+    
+    if (userContent.includes("두통") || userContent.includes("머리")) {
+        nurseAnswer = "🩺 간호사 한마디: 두통이 있으시군요. 타이레놀 등 진통제를 복용하시고 안정을 취해보세요.";
+    } else if (userContent.includes("배") || userContent.includes("복통")) {
+        nurseAnswer = "🩺 간호사 한마디: 복통이 있으실 때는 배를 따뜻하게 하시고 자극적인 음식을 피하세요.";
+    } else if (userContent.includes("열")) {
+        nurseAnswer = "🩺 간호사 한마디: 열이 날 때는 수분을 충분히 섭취하시고 해열제를 드신 후 체온을 체크해보세요.";
+    }
+
+    // 사용자에게 먼저 답변을 알림창이나 화면에 보여줌
+    alert(nurseAnswer);
+
     try {
+        // 2. 사용자의 증상과 간호사의 답변을 함께 데이터베이스에 저장
         await addDoc(collection(db, "consultations"), {
-            userId: currentUser.uid,          // 유저 고유 ID 식별자
+            userId: currentUser.uid,
             userEmail: currentUser.email,
-            content: content,                 // 상담 내용
-            createdAt: new Date()             // 생성 시간
+            userSymptoms: userContent,         // 사용자가 쓴 증상
+            nurseResponse: nurseAnswer,       // 간호사가 한 답변
+            createdAt: new Date()
         });
-        alert('상담 내용이 안전하게 저장되었습니다.');
-        consultInput.value = ''; // 입력창 초기화
+        
+        alert('상담 내역이 저장되었습니다.');
+        consultInput.value = ''; 
     } catch (error) {
         alert('저장 실패: ' + error.message);
     }
