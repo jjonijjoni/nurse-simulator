@@ -1,138 +1,52 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>🏥 AI 간호사 체험 웹</title>
-
-    <link rel="stylesheet"
-          href="style.css">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>간호사 시뮬레이터 & 상담소</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<div class="container">
+    <div class="container">
+        <h1>🏥 간호사 시뮬레이터 & 상담소</h1>
+        <hr>
 
-<h1>🏥 AI 간호사 체험 웹</h1>
+        <div id="auth-section" class="card">
+            <h2 id="auth-title">로그인</h2>
+            <div class="input-group">
+                <input type="email" id="auth-email" placeholder="이메일 주소">
+                <input type="password" id="auth-password" placeholder="비밀번호">
+            </div>
+            <div class="btn-group">
+                <button id="btn-login" class="btn-primary">로그인</button>
+                <button id="btn-signup" class="btn-secondary">회원가입</button>
+            </div>
+        </div>
 
-<hr>
+        <div id="main-section" class="card hidden">
+            <div class="user-profile">
+                <span id="user-info">환영합니다!</span>
+                <button id="btn-logout" class="btn-danger">로그아웃</button>
+            </div>
+            
+            <hr>
 
-<h2>회원</h2>
+            <h3>🩺 실시간 상담 및 증상 기록</h3>
+            <div class="chat-box">
+                <textarea id="consult-input" placeholder="현재 증상이나 상담 내용을 입력하세요... (예: 오늘 아침부터 두통이 있고 열이 나요.)"></textarea>
+                <button id="btn-save-consult" class="btn-success">상담 내용 저장하기</button>
+            </div>
 
-<input
-type="email"
-id="email"
-placeholder="이메일">
+            <hr>
 
-<input
-type="password"
-id="password"
-placeholder="비밀번호">
+            <h3>📋 나의 상담 기록 내역</h3>
+            <div id="consult-history" class="history-list">
+                <p class="empty-msg">저장된 상담 기록이 없습니다.</p>
+            </div>
+        </div>
+    </div>
 
-<div>
-
-<button id="signupBtn">
-
-회원가입
-
-</button>
-
-<button id="loginBtn">
-
-로그인
-
-</button>
-
-<button id="logoutBtn">
-
-로그아웃
-
-</button>
-
-</div>
-
-<br>
-
-<div id="loginStatus">
-
-로그인 안됨
-
-</div>
-
-<hr>
-
-<h2>OpenAI API</h2>
-
-<input
-type="password"
-id="apiKey"
-placeholder="OpenAI API Key">
-
-<hr>
-
-<h2>AI 환자 상담</h2>
-
-<textarea
-
-id="userInput"
-
-rows="8"
-
-placeholder="증상을 입력하세요."
-
-></textarea>
-
-<br><br>
-
-<button id="sendBtn">
-
-상담하기
-
-</button>
-
-<button id="voiceBtn">
-
-🔊 음성 듣기
-
-</button>
-
-<hr>
-
-<h2>AI 답변</h2>
-
-<div id="answer">
-
-안녕하세요.
-
-어디가 불편하신가요?
-
-</div>
-
-<hr>
-
-<h2>상담 기록</h2>
-
-<div id="history">
-
-</div>
-
-</div>
-
-<script type="module"
-src="firebase.js"></script>
-
-<script type="module"
-src="ai.js"></script>
-
-<script
-src="script.js"></script>
-
+    <script type="module" src="script.js"></script>
 </body>
-
 </html>
