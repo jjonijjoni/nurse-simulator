@@ -1,17 +1,17 @@
 let lastAnswer = "";
 
-const sendBtn = document.getElementById("sendBtn");
-const voiceBtn = document.getElementById("voiceBtn");
-
 const userInput = document.getElementById("userInput");
 const answer = document.getElementById("answer");
-const history = document.getElementById("history");
+const historyBox = document.getElementById("history");
+
+const sendBtn = document.getElementById("sendBtn");
+const voiceBtn = document.getElementById("voiceBtn");
 
 sendBtn.addEventListener("click", async () => {
 
     const text = userInput.value.trim();
 
-    if(text==""){
+    if(text===""){
 
         alert("증상을 입력하세요.");
 
@@ -19,34 +19,55 @@ sendBtn.addEventListener("click", async () => {
 
     }
 
-    answer.innerHTML="AI가 생각하는 중...";
+    answer.innerHTML="AI가 답변을 생성하는 중...";
 
-    if(window.askAI){
+    try{
 
-        const aiResult = await window.askAI(text);
+        if(window.askAI){
 
-        lastAnswer=aiResult;
+            const aiAnswer = await window.askAI(text);
 
-        answer.innerHTML=aiResult;
+            lastAnswer = aiAnswer;
 
-        addHistory(text,aiResult);
+            answer.innerHTML = aiAnswer;
+
+            addHistory(text, aiAnswer);
+
+            if(window.saveConsultation){
+
+                window.saveConsultation(
+                    text,
+                    aiAnswer
+                );
+
+            }
+
+        }
+
+        else{
+
+            const demo =
+            "안녕하세요.\n\n"
+            +"증상을 확인했습니다.\n\n"
+            +"언제부터 증상이 있었나요?\n"
+            +"열이나 기침은 있으신가요?\n"
+            +"현재 가장 불편한 증상을 말씀해주세요.";
+
+            lastAnswer = demo;
+
+            answer.innerHTML = demo;
+
+            addHistory(text,demo);
+
+        }
 
     }
 
-    else{
+    catch(e){
 
-        const demoAnswer=
-        "안녕하세요.\n\n"
-        +"증상을 확인했습니다.\n\n"
-        +"언제부터 증상이 시작되었나요?\n"
-        +"통증의 정도는 어느 정도인가요?\n"
-        +"열이나 기침 등의 다른 증상이 있으신가요?";
+        answer.innerHTML="오류가 발생했습니다.";
 
-        lastAnswer=demoAnswer;
-
-        answer.innerHTML=demoAnswer;
-
-        addHistory(text,demoAnswer);
+        console.log(e);
 
     }
 
@@ -54,7 +75,7 @@ sendBtn.addEventListener("click", async () => {
 
 voiceBtn.addEventListener("click",()=>{
 
-    if(lastAnswer==""){
+    if(lastAnswer===""){
 
         alert("먼저 상담을 진행하세요.");
 
@@ -62,38 +83,78 @@ voiceBtn.addEventListener("click",()=>{
 
     }
 
-    const msg=new SpeechSynthesisUtterance();
+    speechSynthesis.cancel();
 
-    msg.lang="ko-KR";
+    const speech =
+    new SpeechSynthesisUtterance();
 
-    msg.text=lastAnswer;
+    speech.lang="ko-KR";
 
-    speechSynthesis.speak(msg);
+    speech.text=lastAnswer;
+
+    speech.rate=1;
+
+    speech.pitch=1;
+
+    speechSynthesis.speak(speech);
 
 });
 
-function addHistory(user,ai){
+function addHistory(user, ai){
 
-    const time=new Date().toLocaleString();
+    const time =
+    new Date().toLocaleString();
 
-    history.innerHTML+=
-    "<hr>"
-    +"<b>시간</b><br>"
+    historyBox.innerHTML +=
+
+    "----------------------\n"
+
+    +"시간\n"
+
     +time
-    +"<br><br>"
-    +"<b>사용자</b><br>"
+
+    +"\n\n"
+
+    +"사용자\n"
+
     +user
-    +"<br><br>"
-    +"<b>AI</b><br>"
+
+    +"\n\n"
+
+    +"AI\n"
+
     +ai
-    +"<br>";
+
+    +"\n\n";
 
 }
 
-function clearHistory(){
+window.clearHistory=function(){
 
-    history.innerHTML="";
+    historyBox.innerHTML="";
 
 }
 
-window.clearHistory=clearHistory;
+window.showLoginUser=function(email){
+
+    const status =
+    document.getElementById(
+    "loginStatus"
+    );
+
+    status.innerHTML=
+    "로그인 : "+email;
+
+}
+
+window.showLogout=function(){
+
+    const status =
+    document.getElementById(
+    "loginStatus"
+    );
+
+    status.innerHTML=
+    "로그인 안됨";
+
+}
