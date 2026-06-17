@@ -1,205 +1,187 @@
-// Firebase SDK 모듈 불러오기
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Firebase 프로젝트 설정 (본인 설정 유지)
+// 🔥 본인의 Firebase 프로젝트 설정 값으로 다시 채워주세요!
 const firebaseConfig = {
-  apiKey: "AIzaSyBwMSX60e_IY3O9wIJf8GWlZnfE6bABldQ",
-  authDomain: "jjonijjoni-4fc75.firebaseapp.com",
-  databaseURL: "https://jjonijjoni-4fc75-default-rtdb.firebaseio.com",
-  projectId: "jjonijjoni-4fc75",
-  storageBucket: "jjonijjoni-4fc75.firebasestorage.app",
-  messagingSenderId: "66509055047",
-  appId: "1:66509055047:web:62fcc8b1ee0487e707fd62",
-  measurementId: "G-WPGJ18M2M0"
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
 };
 
-// Firebase 초기화
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// DOM 요소 가져오기
+// DOM 요소
 const authSection = document.getElementById('auth-section');
 const mainSection = document.getElementById('main-section');
 const authEmail = document.getElementById('auth-email');
 const authPassword = document.getElementById('auth-password');
 const btnLogin = document.getElementById('btn-login');
 const btnSignup = document.getElementById('btn-signup');
-const btnLogout = document.getElementById('btnLogout'); // HTML ID와 매칭 수정
+const btnLogout = document.getElementById('btn-logout');
 const userInfo = document.getElementById('user-info');
 const consultInput = document.getElementById('consult-input');
 const btnSaveConsult = document.getElementById('btn-save-consult');
 const consultHistory = document.getElementById('consult-history');
-
-// API Key 관련 DOM 요소
-const openaiKeyInput = document.getElementById('openai-key-input');
+const openaiKeyInput = document.getElementById('openai-key');
 const btnSaveKey = document.getElementById('btn-save-key');
 
 let currentUser = null;
-let unsubscribeHistory = null; 
-let openAiApiKey = ""; // 사용자가 입력한 API 키 저장 변수
+let unsubscribeHistory = null;
 
-// [추가] 브라우저 로컬 스토리지에서 기존에 저장된 API Key가 있다면 불러오기
-if (localStorage.getItem('openai_api_key')) {
-    openAiApiKey = localStorage.getItem('openai_api_key');
-    openaiKeyInput.value = openAiApiKey;
+// [1] 브라우저 내장 TTS 음성 재생 함수
+function speakText(text) {
+    // 이미 말하고 있는 게 있다면 중지
+    window.speechSynthesis.cancel();
+
+    // 간호사 타이틀 멘트 제외 정제
+    const cleanText = text.replace("용🩺 AI 간호사 답변:", "").replace("🩺 AI 간호사 답변:", "");
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = 'ko-KR'; // 한국어 설정
+    utterance.rate = 1.0;     // 말하는 속도 (0.5 ~ 2.0)
+    utterance.pitch = 1.1;    // 목소리 톤 (약간 친절하고 높은 간호사 톤)
+
+    window.speechSynthesis.speak(utterance);
 }
 
-// API Key 저장 버튼 이벤트
+// [2] API 키 로컬 저장 기능
 btnSaveKey.addEventListener('click', () => {
     const key = openaiKeyInput.value.trim();
-    if (!key) return alert('API Key를 입력해주세요.');
-    openAiApiKey = key;
-    localStorage.setItem('openai_api_key', key); // 브라우저에 보안 저장
-    alert('API Key가 안전하게 저장되었습니다.');
+    if(!key) return alert('API 키를 입력해주세요.');
+    localStorage.setItem('openai_api_key', key);
+    alert('OpenAI API 키가 안전하게 로컬에 저장되었습니다.');
 });
 
-// [1] 회원가입 기능
+// [3] 회원가입 기능
 btnSignup.addEventListener('click', async () => {
     const email = authEmail.value.trim();
     const password = authPassword.value.trim();
-
     if(!email || !password) return alert('이메일과 비밀번호를 입력해주세요.');
-
+    if(password.length < 6) return alert('비밀번호는 6자리 이상이어야 합니다.');
     try {
         await createUserWithEmailAndPassword(auth, email, password);
         alert('회원가입이 완료되었습니다!');
-    } catch (error) {
-        alert('회원가입 실패: ' + error.message);
-    }
+    } catch (error) { alert('회원가입 실패: ' + error.message); }
 });
 
-// [2] 로그인 기능
+// [4] 로그인 기능
 btnLogin.addEventListener('click', async () => {
     const email = authEmail.value.trim();
     const password = authPassword.value.trim();
-
     if(!email || !password) return alert('이메일과 비밀번호를 입력해주세요.');
-
-    try {
-        await signInWithEmailAndPassword(auth, email, password);
-    } catch (error) {
-        alert('로그인 실패: ' + error.message);
-    }
+    try { await signInWithEmailAndPassword(auth, email, password); } 
+    catch (error) { alert('로그인 실패: ' + error.message); }
 });
 
-// [3] 로그아웃 기능
+// [5] 로그아웃 기능
 btnLogout.addEventListener('click', async () => {
-    try {
-        await signOut(auth);
-        alert('로그아웃 되었습니다.');
-    } catch (error) {
-        alert('로그아웃 실패: ' + error.message);
-    }
+    try { 
+        window.speechSynthesis.cancel(); // 로그아웃 시 음성 종료
+        await signOut(auth); 
+        alert('로그아웃 되었습니다.'); 
+    } catch (error) { alert('로그아웃 실패: ' + error.message); }
 });
 
-// [4] 인증 상태 감지
+// [6] 인증 상태 감지
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
         authSection.classList.add('hidden');
         mainSection.classList.remove('hidden');
         userInfo.textContent = `🩺 ${user.email} 님`;
-        authEmail.value = '';
-        authPassword.value = '';
         
+        const savedKey = localStorage.getItem('openai_api_key');
+        if(savedKey) openaiKeyInput.value = savedKey;
+
         loadConsultHistory(user.uid);
     } else {
         currentUser = null;
         authSection.classList.remove('hidden');
         mainSection.classList.add('hidden');
         consultHistory.innerHTML = `<p class="empty-msg">저장된 상담 기록이 없습니다.</p>`;
-        
         if (unsubscribeHistory) unsubscribeHistory();
     }
 });
 
-// [진짜 OpenAI API 호출 함수]
-async function fetchGptResponse(symptoms) {
-    if (!openAiApiKey) {
-        throw new Error("OpenAI API Key가 설정되지 않았습니다. 상단에서 키를 먼저 입력하고 저장해주세요.");
-    }
-
-    // OpenAI Chat Completions API 호출
+// [7] 진짜 ChatGPT API 호출 함수
+async function askChatGPT(apiKey, userMessage) {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${openAiApiKey}`
+            "Authorization": `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-            model: "gpt-4o-mini", // 가성비가 좋고 빠른 모델 사용
+            model: "gpt-4o-mini",
             messages: [
                 { 
                     role: "system", 
-                    content: "당신은 친절하고 전문적인 '친절한 간호사'입니다. 사용자가 증상을 말하면 전문적이면서도 따뜻한 어조로 일차적인 대처 방법(휴식, 수분 섭취, 시판약 권고 등)을 안내하고, 증상이 심할 경우 병원 방문을 권유하는 답변을 3줄 내외로 간결하게 작성하세요. 진단명 확정은 피해 주세요." 
+                    content: "당신은 친절하고 전문적인 가상 '종합병원 수석 간호사'입니다. 환자가 증상을 말하면 따뜻하게 공감해주고, 예상되는 의학적 조언과 대처법을 친절한 문체로 나누어 설명해 주세요. 마지막에는 '정확한 진단은 의사의 진료가 필요합니다'라는 문구를 덧붙여주세요." 
                 },
-                { role: "user", content: symptoms }
+                { role: "user", content: userMessage }
             ],
             temperature: 0.7
         })
     });
 
-    if (!response.ok) {
+    if(!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error?.message || "API 호출 중 오류가 발생했습니다.");
+        throw new Error(errorData.error.message || "GPT 응답을 받아오지 못했습니다.");
     }
 
     const result = await response.json();
-    return result.choices[0].message.content.trim();
+    return result.choices[0].message.content;
 }
 
-// [5] 간호사 상담 및 내용 저장 기능 (진짜 AI 연동 버전)
+// [8] 상담 저장 버튼 클릭 시 진짜 GPT 작동 + TTS 출력
 btnSaveConsult.addEventListener('click', async () => {
     const userContent = consultInput.value.trim();
+    const apiKey = localStorage.getItem('openai_api_key');
+
+    if(!apiKey) return alert('상단에 OpenAI API 키를 먼저 입력하고 [Key 저장]을 눌러주세요.');
     if(!userContent) return alert('증상을 입력해주세요.');
     if(!currentUser) return alert('로그인이 필요합니다.');
-    if(!openAiApiKey) return alert('상단의 OpenAI API Key를 먼저 입력하고 저장해주세요.');
 
-    // 로딩 표시
     btnSaveConsult.disabled = true;
-    btnSaveConsult.textContent = "AI 간호사가 답변을 생각하는 중...";
+    btnSaveConsult.textContent = "🔄 AI 간호사가 증상을 분석하고 있습니다...";
 
     try {
-        // 1. 진짜 OpenAI API를 통해 답변 생성
-        const nurseAnswer = await fetchGptResponse(userContent);
-        
-        // 사용자에게 답변 알림
-        alert(`🩺 AI 간호사 답변:\n\n${nurseAnswer}`);
+        const nurseAnswer = await askChatGPT(apiKey, userContent);
 
-        // 2. 사용자의 증상과 간호사의 답변을 함께 Firestore에 저장
+        // Firestore 데이터베이스에 축적 저장
         await addDoc(collection(db, "consultations"), {
             userId: currentUser.uid,
             userEmail: currentUser.email,
-            userSymptoms: userContent,   
-            nurseResponse: nurseAnswer,  
+            userSymptoms: userContent,
+            nurseResponse: nurseAnswer,
             createdAt: new Date()
         });
         
-        alert('상담 내역이 안전하게 저장되었습니다.');
-        consultInput.value = ''; 
+        consultInput.value = '';
+        
+        // 🔊 답변 완료 시 바로 목소리로 읽어주기 구현!
+        speakText(nurseAnswer);
+
     } catch (error) {
-        alert('오류 발생: ' + error.message);
+        alert('AI 상담 실패: ' + error.message);
     } finally {
-        // 버튼 상태 원복
         btnSaveConsult.disabled = false;
-        btnSaveConsult.textContent = "AI 간호사에 물어보기 & 저장";
+        btnSaveConsult.textContent = "AI 간호사에게 상담받기";
     }
 });
 
-// [6] 특정 유저의 상담 기록 실시간 조회 (Firestore)
+// [9] 데이터 실시간 불러오기 + 과거 내역 재생 이벤트 바인딩
 function loadConsultHistory(uid) {
-    const q = query(
-        collection(db, "consultations"),
-        where("userId", "==", uid),
-        orderBy("createdAt", "desc")
-    );
+    const q = query(collection(db, "consultations"), where("userId", "==", uid), orderBy("createdAt", "desc"));
 
     unsubscribeHistory = onSnapshot(q, (querySnapshot) => {
         consultHistory.innerHTML = '';
-        
         if(querySnapshot.empty) {
             consultHistory.innerHTML = `<p class="empty-msg">저장된 상담 기록이 없습니다.</p>`;
             return;
@@ -211,26 +193,25 @@ function loadConsultHistory(uid) {
 
             const item = document.createElement('div');
             item.className = 'history-item';
-            
-            // 기존 코드의 data.content 오류를 수정하여 증상과 답변이 모두 출력되도록 변경
             item.innerHTML = `
-                <div class="history-date">📅 ${date}</div>
-                <div class="history-symptom"><strong>내 증상:</strong> ${escapeHtml(data.userSymptoms || '')}</div>
-                <div class="history-response"><strong>간호사 답변:</strong> ${escapeHtml(data.nurseResponse || '')}</div>
+                <div class="history-date">📅 기록 일시: ${date}</div>
+                <button class="btn-tts">🔊 다시 듣기</button>
+                <div class="history-user">👤 <strong>내 증상:</strong> ${escapeHtml(data.userSymptoms)}</div>
+                <div class="history-nurse">🩺 <strong>AI 간호사 답변:</strong>\n${escapeHtml(data.nurseResponse)}</div>
             `;
+
+            // 다시 듣기 버튼 기능 연결
+            item.querySelector('.btn-tts').addEventListener('click', () => {
+                speakText(data.nurseResponse);
+            });
+
             consultHistory.appendChild(item);
         });
-    }, (error) => {
-        console.error("기록 불러오기 오류:", error);
-    });
+    }, (error) => { console.error("데이터 수신 오류:", error); });
 }
 
-// XSS 방지 함수
 function escapeHtml(text) {
     return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
