@@ -193,7 +193,7 @@ btnSaveConsult.addEventListener('click', async () => {
     }
 });
 
-// [9] 데이터 실시간 불러오기 + 과거 내역 재생 이벤트 바인딩
+// [9] 데이터 실시간 불러오기 + 과거 내역 재생 이벤트 바인딩 (안전성 보완 버전)
 function loadConsultHistory(uid) {
     const q = query(collection(db, "consultations"), where("userId", "==", uid), orderBy("createdAt", "desc"));
 
@@ -208,23 +208,30 @@ function loadConsultHistory(uid) {
             const data = doc.data();
             const date = data.createdAt ? data.createdAt.toDate().toLocaleString('ko-KR') : '시간 정보 없음';
 
+            // 💡 데이터가 비어있을 경우를 대비한 예외 처리 (에러 방지 핵심)
+            const userSymptoms = data.userSymptoms || data.userContent || "입력된 증상이 없습니다.";
+            const nurseResponse = data.nurseResponse || data.nurseAnswer || "AI 답변을 불러오지 못했습니다.";
+
             const item = document.createElement('div');
             item.className = 'history-item';
             item.innerHTML = `
                 <div class="history-date">📅 기록 일시: ${date}</div>
                 <button class="btn-tts">🔊 다시 듣기</button>
-                <div class="history-user">👤 <strong>내 증상:</strong> ${escapeHtml(data.userSymptoms)}</div>
-                <div class="history-nurse">🩺 <strong>AI 간호사 답변:</strong>\n${escapeHtml(data.nurseResponse)}</div>
+                <div class="history-user">👤 <strong>내 증상:</strong> ${escapeHtml(userSymptoms)}</div>
+                <div class="history-nurse">🩺 <strong>AI 간호사 답변:</strong>\n${escapeHtml(nurseResponse)}</div>
             `;
 
             // 다시 듣기 버튼 기능 연결
             item.querySelector('.btn-tts').addEventListener('click', () => {
-                speakText(data.nurseResponse);
+                speakText(nurseResponse);
             });
 
             consultHistory.appendChild(item);
         });
-    }, (error) => { console.error("데이터 수신 오류:", error); });
+    }, (error) => { 
+        console.error("데이터 수신 오류:", error); 
+        consultHistory.innerHTML = `<p class="empty-msg" style="color: red;">데이터를 불러오는 중 오류가 발생했습니다.</p>`;
+    });
 }
 
 function escapeHtml(text) {
