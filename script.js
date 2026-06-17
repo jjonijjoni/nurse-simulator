@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// 🔥 본인의 Firebase 프로젝트 설정 값으로 다시 채워주세요!
+// Firebase 프로젝트 설정 값
 const firebaseConfig = {
   apiKey: "AIzaSyBwMSX60e_IY3O9wIJf8GWlZnfE6bABldQ",
   authDomain: "jjonijjoni-4fc75.firebaseapp.com",
@@ -36,20 +36,35 @@ const btnSaveKey = document.getElementById('btn-save-key');
 let currentUser = null;
 let unsubscribeHistory = null;
 
-// [1] 브라우저 내장 TTS 음성 재생 함수
+// [1] 브라우저 내장 TTS 음성 재생 함수 (보안 정책 대응 및 오류 수정 버전)
 function speakText(text) {
-    // 이미 말하고 있는 게 있다면 중지
-    window.speechSynthesis.cancel();
+    if (window.speechSynthesis) {
+        window.speechSynthesis.cancel(); // 이미 재생 중인 음성이 있다면 중지
+    } else {
+        alert("이 브라우저는 음성 안내(TTS) 기능을 지원하지 않습니다.");
+        return;
+    }
 
-    // 간호사 타이틀 멘트 제외 정제
-    const cleanText = text.replace("용🩺 AI 간호사 답변:", "").replace("🩺 AI 간호사 답변:", "");
+    // 발음을 방해하는 특수 기호 및 타이틀 텍스트 정제
+    const cleanText = text
+        .replace(/---/g, "")
+        .replace(/🩺|👤|📅|<strong>|<\/strong>|\*/g, "")
+        .replace("AI 간호사 답변:", "")
+        .replace("내 증상:", "");
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.lang = 'ko-KR'; // 한국어 설정
-    utterance.rate = 1.0;     // 말하는 속도 (0.5 ~ 2.0)
-    utterance.pitch = 1.1;    // 목소리 톤 (약간 친절하고 높은 간호사 톤)
+    utterance.lang = 'ko-KR'; 
+    utterance.rate = 1.0;     
+    utterance.pitch = 1.0;    
 
-    window.speechSynthesis.speak(utterance);
+    // 일부 브라우저에서 생기는 비동기 음성 끊김 방지
+    setTimeout(() => {
+        window.speechSynthesis.speak(utterance);
+    }, 100);
+
+    utterance.onerror = (event) => {
+        console.error("TTS 재생 중 오류 발생:", event.error);
+    };
 }
 
 // [2] API 키 로컬 저장 기능
@@ -84,7 +99,7 @@ btnLogin.addEventListener('click', async () => {
 // [5] 로그아웃 기능
 btnLogout.addEventListener('click', async () => {
     try { 
-        window.speechSynthesis.cancel(); // 로그아웃 시 음성 종료
+        window.speechSynthesis.cancel(); // 음성 종료
         await signOut(auth); 
         alert('로그아웃 되었습니다.'); 
     } catch (error) { alert('로그아웃 실패: ' + error.message); }
@@ -141,7 +156,7 @@ async function askChatGPT(apiKey, userMessage) {
     return result.choices[0].message.content;
 }
 
-// [8] 상담 저장 버튼 클릭 시 진짜 GPT 작동 + TTS 출력
+// [8] 상담 저장 버튼 클릭 시 진짜 GPT 작동 + TTS 출력 (오류 수정 완료)
 btnSaveConsult.addEventListener('click', async () => {
     const userContent = consultInput.value.trim();
     const apiKey = localStorage.getItem('openai_api_key');
@@ -167,41 +182,8 @@ btnSaveConsult.addEventListener('click', async () => {
         
         consultInput.value = '';
         
-        // 🔊 답변 완료 시 바로 목소리로 읽어주기 구현!
-       // [1] 브라우저 내장 TTS 음성 재생 함수 (보안 정책 대응 보완 버전)
-function speakText(text) {
-    // 1. 이미 말하고 있는 게 있다면 즉시 중지 및 초기화
-    if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-    } else {
-        alert("이 브라우저는 음성 안내(TTS) 기능을 지원하지 않습니다.");
-        return;
-    }
-
-    // 간호사 타이틀 멘트 제외 및 정제 (특수 기호 제거하여 발음 자연스럽게)
-    const cleanText = text
-        .replace(/🩺|👤|📅/g, "")
-        .replace("AI 간호사 답변:", "")
-        .replace("내 증상:", "");
-
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.lang = 'ko-KR'; // 한국어
-    utterance.rate = 1.0;     // 속도
-    utterance.pitch = 1.0;    // 톤
-
-    // 2. 💡 일부 브라우저에서 발생하는 비동기 음성 씹힘 현상 방지용 로직
-    setTimeout(() => {
-        window.speechSynthesis.speak(utterance);
-    }, 100);
-
-    // 에러 디버깅용 로그
-    utterance.onerror = (event) => {
-        console.error("TTS 재생 중 오류 발생:", event.error);
-        if (event.error === 'interrupted') {
-            console.log("이전 음성이 중단되고 새로운 음성이 요청되었습니다.");
-        }
-    };
-}
+        // 🔊 깔끔하게 정의된 외부 speakText 함수를 정상적으로 호출합니다.
+        speakText(nurseAnswer);
 
     } catch (error) {
         alert('AI 상담 실패: ' + error.message);
