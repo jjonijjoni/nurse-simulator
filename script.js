@@ -168,7 +168,40 @@ btnSaveConsult.addEventListener('click', async () => {
         consultInput.value = '';
         
         // 🔊 답변 완료 시 바로 목소리로 읽어주기 구현!
-        speakText(nurseAnswer);
+       // [1] 브라우저 내장 TTS 음성 재생 함수 (보안 정책 대응 보완 버전)
+function speakText(text) {
+    // 1. 이미 말하고 있는 게 있다면 즉시 중지 및 초기화
+    if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+    } else {
+        alert("이 브라우저는 음성 안내(TTS) 기능을 지원하지 않습니다.");
+        return;
+    }
+
+    // 간호사 타이틀 멘트 제외 및 정제 (특수 기호 제거하여 발음 자연스럽게)
+    const cleanText = text
+        .replace(/🩺|👤|📅/g, "")
+        .replace("AI 간호사 답변:", "")
+        .replace("내 증상:", "");
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = 'ko-KR'; // 한국어
+    utterance.rate = 1.0;     // 속도
+    utterance.pitch = 1.0;    // 톤
+
+    // 2. 💡 일부 브라우저에서 발생하는 비동기 음성 씹힘 현상 방지용 로직
+    setTimeout(() => {
+        window.speechSynthesis.speak(utterance);
+    }, 100);
+
+    // 에러 디버깅용 로그
+    utterance.onerror = (event) => {
+        console.error("TTS 재생 중 오류 발생:", event.error);
+        if (event.error === 'interrupted') {
+            console.log("이전 음성이 중단되고 새로운 음성이 요청되었습니다.");
+        }
+    };
+}
 
     } catch (error) {
         alert('AI 상담 실패: ' + error.message);
