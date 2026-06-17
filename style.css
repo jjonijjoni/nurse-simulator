@@ -1,25 +1,39 @@
-/* 전반적인 테마 및 레이아웃 */
+:root {
+    --primary-color: #4a90e2;
+    --secondary-color: #6c757d;
+    --success-color: #2ea44f;
+    --danger-color: #cb2431;
+    --bg-color: #f6f8fa;
+    --card-bg: #ffffff;
+    --text-color: #24292e;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f0f2f5;
+    background-color: var(--bg-color);
+    color: var(--text-color);
     margin: 0;
     padding: 20px;
     display: flex;
     justify-content: center;
-    align-items: center;
-    min-height: 100vh;
 }
 
 .container {
     width: 100%;
-    max-width: 550px;
+    max-width: 600px;
+}
+
+h1 {
+    text-align: center;
+    color: var(--primary-color);
 }
 
 .card {
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    padding: 24px;
+    background: var(--card-bg);
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
+    padding: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     margin-bottom: 20px;
 }
 
@@ -27,43 +41,33 @@ body {
     display: none !important;
 }
 
-/* 폼 요소 및 버튼 */
-h2, h3 {
-    margin-top: 0;
-    color: #333;
-}
-
-p.notice {
-    font-size: 13px;
-    color: #666;
-    margin-top: -5px;
-    margin-bottom: 10px;
-}
-
-input[type="email"],
-input[type="password"],
-textarea {
+.input-group input, .chat-box textarea, .api-key-box input {
     width: 100%;
     padding: 12px;
     margin-bottom: 12px;
-    border: 1px solid #ddd;
+    border: 1px solid #d1d5da;
     border-radius: 6px;
     box-sizing: border-box;
     font-size: 14px;
 }
 
-textarea {
-    resize: none;
-}
-
-.input-inline {
+.api-key-box {
     display: flex;
-    gap: 8px;
+    gap: 10px;
+    margin-top: 15px;
+}
+.api-key-box input {
+    margin-bottom: 0;
+    flex: 3;
+}
+.api-key-box button {
+    flex: 1;
+    padding: 6px;
 }
 
-.input-inline input {
-    flex: 1;
-    margin-bottom: 0;
+.chat-box textarea {
+    height: 120px;
+    resize: none;
 }
 
 .btn-group {
@@ -72,78 +76,87 @@ textarea {
 }
 
 button {
-    padding: 12px 20px;
+    padding: 12px;
     border: none;
     border-radius: 6px;
-    cursor: pointer;
     font-weight: bold;
+    cursor: pointer;
     font-size: 14px;
     transition: background 0.2s;
 }
 
 button:disabled {
-    background-color: #ccc !important;
+    background-color: #cbd5e1 !important;
     cursor: not-allowed;
 }
 
-.btn-primary { background-color: #007bff; color: white; width: 100%; }
-.btn-primary:hover { background-color: #0056b3; }
+.btn-primary { background-color: var(--primary-color); color: white; flex: 1; }
+.btn-primary:hover { background-color: #357abd; }
 
-.btn-secondary { background-color: #6c757d; color: white; }
+.btn-secondary { background-color: var(--secondary-color); color: white; }
 .btn-secondary:hover { background-color: #5a6268; }
 
-.btn-danger { background-color: #dc3545; color: white; padding: 6px 12px; font-size: 12px;}
-.btn-danger:hover { background-color: #bd2130; }
+.btn-success { background-color: var(--success-color); color: white; width: 100%; }
+.btn-success:hover { background-color: #2c974b; }
 
-/* 상단 상태창 */
-.header-status {
+.btn-danger { background-color: var(--danger-color); color: white; padding: 6px 12px; }
+
+/* TTS 음성 재생 버튼 디자인 */
+.btn-tts {
+    background-color: #e2e8f0;
+    color: #4a5568;
+    padding: 4px 8px;
+    font-size: 11px;
+    float: right;
+    border-radius: 4px;
+}
+.btn-tts:hover {
+    background-color: #cbd5e1;
+}
+
+.user-profile {
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-weight: bold;
-    color: #495057;
-}
-
-hr {
-    border: 0;
-    height: 1px;
-    background: #eee;
-    margin: 20px 0;
-}
-
-/* 상담 기록 히스토리 스타일 */
-#consult-history {
-    max-height: 300px;
-    overflow-y: auto;
 }
 
 .history-item {
     background: #f8f9fa;
-    border-left: 4px solid #007bff;
-    padding: 12px;
-    margin-bottom: 10px;
+    border-left: 4px solid var(--primary-color);
+    padding: 15px;
+    margin-top: 15px;
     border-radius: 0 6px 6px 0;
-    font-size: 13px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    overflow: hidden; /* float 해제용 */
 }
 
 .history-date {
     font-size: 11px;
-    color: #868e96;
+    color: #888;
+    margin-bottom: 8px;
+    display: inline-block;
+}
+
+.history-user {
+    font-size: 14px;
+    font-weight: 500;
     margin-bottom: 6px;
 }
 
-.history-symptom {
-    margin-bottom: 4px;
-    color: #343a40;
-}
-
-.history-response {
-    color: #0b5ed7;
+.history-nurse {
+    font-size: 14px;
+    color: #2c7a7b;
+    background-color: #e6fffa;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 6px;
+    line-height: 1.5;
+    white-space: pre-wrap;
 }
 
 .empty-msg {
     text-align: center;
-    color: #adb5bd;
-    font-size: 14px;
-    padding: 20px 0;
+    color: #8c959f;
+    font-style: italic;
 }
