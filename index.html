@@ -3,16 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 간호사 상담 서비스</title>
+    <title>간호사 시뮬레이터 & 상담소</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
     <div class="container">
+        <h1>🏥 AI 간호사 시뮬레이터 & 상담소</h1>
+        <hr>
+
         <div id="auth-section" class="card">
-            <h2>인증 및 로그인</h2>
+            <h2 id="auth-title">로그인 / 회원가입</h2>
             <div class="input-group">
                 <input type="email" id="auth-email" placeholder="이메일 주소">
-                <input type="password" id="auth-password" placeholder="비밀번호">
+                <input type="password" id="auth-password" placeholder="비밀번호 (6자리 이상)">
             </div>
             <div class="btn-group">
                 <button id="btn-login" class="btn-primary">로그인</button>
@@ -21,37 +25,29 @@
         </div>
 
         <div id="main-section" class="card hidden">
-            <div class="header-status">
-                <span id="user-info">🩺 로그인 중</span>
-                <button id="btnLogout" class="btn-danger">로그아웃</button>
+            <div class="user-profile">
+                <span id="user-info">환영합니다!</span>
+                <button id="btn-logout" class="btn-danger">로그아웃</button>
+            </div>
+            
+            <div class="api-key-box">
+                <input type="password" id="openai-key" placeholder="OpenAI API 키를 입력하세요 (sk-...)">
+                <button id="btn-save-key" class="btn-secondary">Key 저장</button>
             </div>
             
             <hr>
 
-            <div class="api-key-section">
-                <h3>🔑 OpenAI API 설정</h3>
-                <p class="notice">상담을 시작하려면 OpenAI API Key를 입력하세요.</p>
-                <div class="input-inline">
-                    <input type="password" id="openai-key-input" placeholder="sk-proj-...">
-                    <button id="btn-save-key" class="btn-secondary">키 저장</button>
-                </div>
+            <h3>🩺 실시간 AI 증상 상담 입력</h3>
+            <div class="chat-box">
+                <textarea id="consult-input" placeholder="현재 증상이나 아픈 곳을 상세히 입력하세요... GPT 간호사가 실시간으로 진단해 드립니다."></textarea>
+                <button id="btn-save-consult" class="btn-success">AI 간호사에게 상담받기</button>
             </div>
 
             <hr>
 
-            <div class="consult-section">
-                <h3>🏥 AI 간호사 상담</h3>
-                <textarea id="consult-input" placeholder="어디가 불편하신지 증상을 자세히 적어주세요. (예: 어제부터 머리가 지끈거리고 열이 나요.)" rows="4"></textarea>
-                <button id="btn-save-consult" class="btn-primary">AI 간호사에게 물어보기 & 저장</button>
-            </div>
-
-            <hr>
-
-            <div class="history-section">
-                <h3>📅 이전 상담 기록</h3>
-                <div id="consult-history">
-                    <p class="empty-msg">저장된 상담 기록이 없습니다.</p>
-                </div>
+            <h3>📋 나의 AI 상담 및 진단 기록 내역</h3>
+            <div id="consult-history" class="history-list">
+                <p class="empty-msg">저장된 상담 기록이 없습니다.</p>
             </div>
         </div>
     </div>
